@@ -2,17 +2,18 @@ import { useCallback } from "react"
 import { useDropzone } from "react-dropzone"
 import { db, FileDB } from "../../db"
 import { usePeer } from "../../hooks/usePeer"
+import { v4 } from "uuid"
 
 type Props = {
     onFileUpload: () => void
 }
 
 export const FileUpload = ({ onFileUpload }: Props) => {
-    const { id } = usePeer()
+    const { id: uploader } = usePeer()
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         acceptedFiles.forEach((file) => {
-            if (!id) return
+            if (!uploader) return
             const reader = new FileReader()
 
             reader.onabort = () => console.log('file reading was aborted')
@@ -26,10 +27,11 @@ export const FileUpload = ({ onFileUpload }: Props) => {
                     type: file.type,
                     blob: blob,
                     size: file.size,
-                    uploader: id
+                    uploader: uploader,
+                    id: v4()
                 }
                 db.then(_ => {
-                    _.put('files', data)
+                    _.put('files', data, data.id)
                 }).then(() => {
                     onFileUpload()
                 })
@@ -38,7 +40,7 @@ export const FileUpload = ({ onFileUpload }: Props) => {
             reader.readAsArrayBuffer(file)
         })
 
-    }, [id, onFileUpload])
+    }, [uploader, onFileUpload])
 
     const { getRootProps, getInputProps } = useDropzone({ onDrop })
 

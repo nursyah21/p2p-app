@@ -6,6 +6,7 @@ export type FileDB = {
   size: number;
   type: string;
   uploader: string;
+  id: string;
 }
 
 type MyDB = DBSchema & {
@@ -19,14 +20,14 @@ type MyDB = DBSchema & {
   },
   files: {
     value: FileDB;
-    key: number;
+    key: string;
   };
 }
 
-export const db = openDB<MyDB>('db3', 1, {
+export const db = openDB<MyDB>('db5', 1, {
   upgrade(db) {
     db.createObjectStore('userId');
     db.createObjectStore('friendsId');
-    db.createObjectStore('files', { autoIncrement: true });
+    db.createObjectStore('files');
   },
 });

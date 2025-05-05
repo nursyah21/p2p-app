@@ -10,8 +10,6 @@ import { TrashIcon } from "../assets/trashIcon"
 import { DownloadIcon } from "../assets/downloadIcon"
 import { SendIcon } from "../assets/sendIcon"
 
-
-
 export const Home = () => {
     const { id, friendId, setFriendId } = usePeer()
     const [files, setFiles] = useState<FileDB[]>()
@@ -31,7 +29,7 @@ export const Home = () => {
     console.log({ friendId })
     console.log({ files })
 
-    const handleDownload = (blob: Blob, name:string) => {
+    const handleDownload = (blob: Blob, name: string) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -40,7 +38,17 @@ export const Home = () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      };
+    };
+
+    const handleDelete = (id: string) => {
+        db.then(_ =>
+            _.delete('files', id).then(() => {
+                console.log(id)
+                fetchFiles();
+            })
+        );
+    };
+
 
     return <>
         <div className="container mx-auto max-w-7xl">
@@ -64,9 +72,9 @@ export const Home = () => {
                         <td>{_.type.split('/')[0]}</td>
                         <td>{(_.size / (1024 * 1024)).toFixed(2) + 'mb'}</td>
                         <td className="flex gap-x-4">
-                            <button onClick={()=>handleDownload(_.blob, _.name)} className="text-blue-500 hover:text-blue-800"><DownloadIcon /></button>
-                            <button className="text-green-500 hover:text-green-800"><SendIcon /></button>
-                            <button className="text-red-500 hover:text-red-800"><TrashIcon /></button>
+                            <button onClick={() => handleDownload(_.blob, _.name)} className="text-blue-500 hover:text-blue-800"><DownloadIcon /></button>
+                            <button  className="text-green-500 hover:text-green-800"><SendIcon /></button>
+                            <button onClick={() => handleDelete(_.id)} className="text-red-500 hover:text-red-800"><TrashIcon /></button>
                         </td>
                     </tr>)}
                 </>} />
