@@ -10,16 +10,20 @@ export const usePeer = () => {
     useEffect(() => {
         // Check if user ID already exists in the IndexedDB
         // if no ID is found, generate new peer ID using PeerConnection
-        db.get('user', 1).then(_id => {
-            if(!_id) {
-                PeerConnection.startPeerSession().then(id => {
-                    setId(id)
-                    db.put('user', id, 1)
-                })
-            } else {
-                setId(_id)
-            }
-        })   
+        db.then(_ =>
+            _.get('userId', 1).then(_id => {
+                if (!_id) {
+                    PeerConnection.startPeerSession().then(id => {
+                        setId(id)
+                        db.then(_ =>
+                            _.put('userId', id, 1)
+                        )
+                    })
+                } else {
+                    setId(_id)
+                }
+            })
+        )
 
     }, [])
 

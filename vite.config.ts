@@ -8,5 +8,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss(),
     VitePWA({ registerType: 'autoUpdate' })
   ],
+  server:{
+    allowedHosts: [
+      // just for testing 
+      "apt-hog-neatly.ngrok-free.app"
+    ]
+  },
+  build: {
+    chunkSizeWarningLimit: 1024*1024
+  }
 })
 
