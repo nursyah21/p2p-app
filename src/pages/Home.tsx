@@ -1,18 +1,22 @@
+import { deleteDB } from "idb"
 import { QRCodeSVG } from "qrcode.react"
-import { InputID } from "../components/home/inputid"
-import { ScanQR } from "../components/home/scanqr"
-import { usePeer } from "../hooks/usePeer"
-import { FileUpload } from "../components/home/fileUpload"
 import { useEffect, useState } from "react"
-import { db, FileDB } from "../db"
-import { Table } from "../components/table"
-import { TrashIcon } from "../assets/trashIcon"
 import { DownloadIcon } from "../assets/downloadIcon"
 import { SendIcon } from "../assets/sendIcon"
+import { TrashIcon } from "../assets/trashIcon"
+import { FileUpload } from "../components/home/fileUpload"
+import { InputID } from "../components/home/inputid"
+import { Reset } from "../components/home/reset"
+import { ScanQR } from "../components/home/scanqr"
+import { Table } from "../components/table"
+import { db, FileDB } from "../db"
+import { usePeer } from "../hooks/usePeer"
+import { formatSize } from "../libs/formatSize"
 
 export const Home = () => {
     const { id, friendId, setFriendId } = usePeer()
     const [files, setFiles] = useState<FileDB[]>()
+    const [size, setSize] = useState(0)
 
     const fetchFiles = () => db.then(_ => {
         _.getAll("files").then(e => setFiles(e))
@@ -22,12 +26,24 @@ export const Home = () => {
         fetchFiles()
     }, [])
 
+    useEffect(() => {
+        db.then(_ => {
+            _.getAll('files').then(file =>
+                setSize(file.reduce((acc, f) => acc + f.blob.size, 0))
+            )
+        })
+    }, [files])
+
+    const resetDb = async () => {
+        deleteDB('db')
+        window.location.reload()
+    };
+
     if (!id) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>
     }
 
     console.log({ friendId })
-    console.log({ files })
 
     const handleDownload = (blob: Blob, name: string) => {
         const url = URL.createObjectURL(blob);
@@ -43,7 +59,6 @@ export const Home = () => {
     const handleDelete = (id: string) => {
         db.then(_ =>
             _.delete('files', id).then(() => {
-                console.log(id)
                 fetchFiles();
             })
         );
@@ -53,7 +68,10 @@ export const Home = () => {
     return <>
         <div className="container mx-auto max-w-7xl">
             <div className="m-4">
-                <h2 className="text-2xl font-bold mb-4">p2p file</h2>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold mb-4">p2p file</h2>
+                    <Reset size={size} reset={resetDb} />
+                </div>
 
                 id: {id} <br />
                 <QRCodeSVG value={id} />
@@ -70,10 +88,10 @@ export const Home = () => {
                         <td>{idx + 1}</td>
                         <td>{_.name.length > 20 ? _.name.slice(0, 20) + '...' : _.name}</td>
                         <td>{_.type.split('/')[0]}</td>
-                        <td>{(_.size / (1024 * 1024)).toFixed(2) + 'mb'}</td>
+                        <td>{formatSize(_.size)}</td>
                         <td className="flex gap-x-4">
                             <button onClick={() => handleDownload(_.blob, _.name)} className="text-blue-500 hover:text-blue-800"><DownloadIcon /></button>
-                            <button  className="text-green-500 hover:text-green-800"><SendIcon /></button>
+                            <button className="text-green-500 hover:text-green-800"><SendIcon /></button>
                             <button onClick={() => handleDelete(_.id)} className="text-red-500 hover:text-red-800"><TrashIcon /></button>
                         </td>
                     </tr>)}

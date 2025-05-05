@@ -17,6 +17,8 @@ Basic functionality is already working.
 - Delet files [x]
 - Display a list of all downloads and uploads [x]
 - Store all data (IDs, uploaded files, and downloaded files) in IndexedDB [x]
+- Show Total Storage [x]
+- Reset Database [x]
 - Pairing with other []
 - Send file to other []
 

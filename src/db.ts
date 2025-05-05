@@ -10,24 +10,19 @@ export type FileDB = {
 }
 
 type MyDB = DBSchema & {
-  userId: {
-    key: number;
+  users: {
+    key: string;
     value: string;
   };
-  friendsId: {
-    key: number;
-    value: string;
-  },
   files: {
     value: FileDB;
     key: string;
   };
 }
 
-export const db = openDB<MyDB>('db5', 1, {
+export const db = openDB<MyDB>('db', 1, {
   upgrade(db) {
-    db.createObjectStore('userId');
-    db.createObjectStore('friendsId');
+    db.createObjectStore('users');
     db.createObjectStore('files');
   },
 });
